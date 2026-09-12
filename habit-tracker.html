@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Habit Streak Tracker — The No-Fluff Toolkit</title>
+<style>
+  :root {
+    --navy: #1f2d3a; --navy-deep: #142029; --stone: #f4efe4; --stone-line: #ddd4bf;
+    --teal: #2f5d62; --gold: #c9a227; --ink: #2a2a28; --good: #3b7d4f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--stone); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 26px; flex-wrap: wrap; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size: 30px; margin: 0 0 4px; color: var(--navy-deep); font-weight: 600; }
+  .subhead { margin: 0; color: #5c6b63; font-size: 14.5px; max-width: 520px; }
+  .brand { font-size: 12px; letter-spacing: 0.3px; color: #8a8574; text-align: right; }
+  .brand b { color: var(--navy); }
+  .panel { background: #fff; border: 1px solid var(--stone-line); border-radius: 12px; padding: 20px 22px; margin-bottom: 20px; }
+  .row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .row input { flex: 1; padding: 9px 12px; border: 1px solid var(--stone-line); border-radius: 8px; font-size: 14px; }
+  button { font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; border: 1px solid transparent; padding: 10px 16px; }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover { background: var(--navy-deep); }
+  .btn-ghost { background: #fff; color: var(--navy); border-color: var(--stone-line); }
+  .btn-ghost:hover { border-color: var(--navy); }
+  .btn-small { padding: 6px 10px; font-size: 12.5px; }
+
+  .habit-card { border: 1px solid var(--stone-line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; background: #fbf9f4; }
+  .habit-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .habit-name { font-weight: 700; font-size: 15px; color: var(--navy-deep); }
+  .habit-stats { font-size: 12.5px; color: #7a8177; }
+  .habit-stats b { color: var(--teal); }
+  .remove-link { font-size: 12px; color: #a34a3a; cursor: pointer; }
+
+  .day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 5px; }
+  .day-cell {
+    aspect-ratio: 1; border-radius: 5px; border: 1px solid var(--stone-line); background: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #b0aa98;
+  }
+  .day-cell.done { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .day-cell.today { box-shadow: 0 0 0 2px var(--gold) inset; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .stat { background: var(--stone); border-radius: 10px; padding: 14px 16px; }
+  .stat .label { font-size: 11.5px; text-transform: uppercase; color: #8a8574; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .stat .value { font-size: 22px; font-weight: 700; color: var(--navy-deep); }
+
+  .footer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 12px; }
+  .save-note { font-size: 12.5px; color: #8a9089; }
+  .export-buttons { display: flex; gap: 10px; }
+
+  @media print {
+    .row, button, .footer-actions, header .brand, .remove-link { display: none !important; }
+    .panel { border: none; padding: 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>The Habit Streak Tracker</h1>
+      <p class="subhead">Track any habit for the current month, watch your real streak build automatically, and see which habits are actually sticking — not just a grid of empty boxes.</p>
+    </div>
+    <div class="brand">A resource from<br><b>The No-Fluff Toolkit</b></div>
+  </header>
+
+  <div class="panel">
+    <div class="row">
+      <input type="text" id="habitInput" placeholder="Add a habit (e.g. Drink 64oz water)" />
+      <button class="btn-primary" id="addHabit">Add habit</button>
+    </div>
+  </div>
+
+  <div id="habitsContainer"></div>
+
+  <div class="panel">
+    <h2 style="font-size:15px;margin:0 0 14px;text-transform:uppercase;letter-spacing:0.4px;color:var(--teal);font-weight:700;">This month overall</h2>
+    <div class="summary-grid" id="overallSummary"></div>
+  </div>
+
+  <div class="footer-actions">
+    <div class="save-note" id="saveNote">Auto-saves in this browser as you go.</div>
+    <div class="export-buttons">
+      <button class="btn-ghost" id="exportCsv">Export data (CSV)</button>
+      <button class="btn-primary" id="exportPdf">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "nofluff_habit_tracker_v1";
+const now = new Date();
+const YEAR = now.getFullYear();
+const MONTH = now.getMonth();
+const DAYS_IN_MONTH = new Date(YEAR, MONTH + 1, 0).getDate();
+const TODAY = now.getDate();
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || { habits: [] };
+
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  document.getElementById('saveNote').textContent = "Saved to this browser • " + new Date().toLocaleTimeString();
+}
+
+function computeStreaks(days) {
+  let current = 0;
+  for (let d = TODAY; d >= 1; d--) {
+    if (days[d]) current++; else break;
+  }
+  let longest = 0, run = 0;
+  for (let d = 1; d <= DAYS_IN_MONTH; d++) {
+    if (days[d]) { run++; longest = Math.max(longest, run); } else { run = 0; }
+  }
+  const totalDone = Object.values(days).filter(Boolean).length;
+  return { current, longest, totalDone };
+}
+
+function render() {
+  const container = document.getElementById('habitsContainer');
+  container.innerHTML = '';
+
+  state.habits.forEach(h => {
+    if (!h.days) h.days = {};
+    const stats = computeStreaks(h.days);
+    const card = document.createElement('div');
+    card.className = 'habit-card';
+
+    let cellsHtml = '';
+    for (let d = 1; d <= DAYS_IN_MONTH; d++) {
+      const done = !!h.days[d];
+      const isToday = d === TODAY;
+      cellsHtml += `<div class="day-cell ${done ? 'done' : ''} ${isToday ? 'today' : ''}" data-habit="${h.id}" data-day="${d}">${d}</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="habit-head">
+        <span class="habit-name">${h.name}</span>
+        <span class="remove-link" data-remove="${h.id}">Remove</span>
+      </div>
+      <div class="habit-stats" style="margin-bottom:10px;">
+        Current streak: <b>${stats.current} day${stats.current === 1 ? '' : 's'}</b> &nbsp;•&nbsp;
+        Longest streak: <b>${stats.longest} day${stats.longest === 1 ? '' : 's'}</b> &nbsp;•&nbsp;
+        Done ${stats.totalDone}/${DAYS_IN_MONTH} days this month
+      </div>
+      <div class="day-grid">${cellsHtml}</div>
+    `;
+    container.appendChild(card);
+  });
+
+  container.querySelectorAll('.day-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const habit = state.habits.find(h => h.id === cell.dataset.habit);
+      const day = cell.dataset.day;
+      habit.days[day] = !habit.days[day];
+      save(); render();
+    });
+  });
+
+  container.querySelectorAll('[data-remove]').forEach(link => {
+    link.addEventListener('click', () => {
+      state.habits = state.habits.filter(h => h.id !== link.dataset.remove);
+      save(); render();
+    });
+  });
+
+  renderOverall();
+}
+
+function renderOverall() {
+  const el = document.getElementById('overallSummary');
+  if (!state.habits.length) {
+    el.innerHTML = '<div class="stat"><div class="label">No habits yet</div><div class="value" style="font-size:14px;color:#9a9484;">Add one above to start tracking</div></div>';
+    return;
+  }
+  const allStreaks = state.habits.map(h => computeStreaks(h.days || {}));
+  const bestCurrent = Math.max(...allStreaks.map(s => s.current));
+  const avgDone = Math.round(allStreaks.reduce((sum, s) => sum + s.totalDone, 0) / state.habits.length);
+  el.innerHTML = `
+    <div class="stat"><div class="label">Habits tracked</div><div class="value">${state.habits.length}</div></div>
+    <div class="stat"><div class="label">Best current streak</div><div class="value">${bestCurrent}d</div></div>
+    <div class="stat"><div class="label">Avg. days hit this month</div><div class="value">${avgDone}</div></div>
+  `;
+}
+
+document.getElementById('addHabit').addEventListener('click', addHabit);
+document.getElementById('habitInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') addHabit(); });
+function addHabit() {
+  const input = document.getElementById('habitInput');
+  const name = input.value.trim();
+  if (!name) return;
+  state.habits.push({ id: uid(), name, days: {} });
+  input.value = '';
+  save(); render();
+}
+
+document.getElementById('exportCsv').addEventListener('click', () => {
+  let csv = 'Habit,Day,Completed\n';
+  state.habits.forEach(h => {
+    for (let d = 1; d <= DAYS_IN_MONTH; d++) {
+      csv += `"${h.name}",${d},${h.days && h.days[d] ? 'Yes' : 'No'}\n`;
+    }
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'habit-tracker.csv';
+  a.click();
+});
+
+document.getElementById('exportPdf').addEventListener('click', () => window.print());
+
+render();
+</script>
+</body>
+</html>
