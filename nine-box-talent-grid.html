@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The 9-Box Talent Grid — The Plugged Hub</title>
+<style>
+  :root {
+    --navy: #1f2d3a;
+    --navy-deep: #142029;
+    --stone: #f4efe4;
+    --stone-line: #ddd4bf;
+    --teal: #2f5d62;
+    --gold: #c9a227;
+    --ink: #2a2a28;
+    --danger: #a34a3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--stone); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 26px; flex-wrap: wrap; }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px; margin: 0 0 4px; color: var(--navy-deep); font-weight: 600;
+  }
+  .subhead { margin: 0; color: #5c6b63; font-size: 14.5px; max-width: 480px; }
+  .brand { font-size: 12px; letter-spacing: 0.3px; color: #8a8574; text-align: right; }
+  .brand b { color: var(--navy); }
+
+  .toolbar {
+    display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap;
+  }
+  .toolbar input[type="text"] {
+    flex: 1; min-width: 180px; padding: 10px 14px; border: 1px solid var(--stone-line);
+    border-radius: 8px; font-size: 14.5px; background: #fff;
+  }
+  button {
+    font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    border-radius: 8px; border: 1px solid transparent; padding: 10px 16px;
+  }
+  .btn-primary { background: var(--navy); color: #fff; }
+  .btn-primary:hover { background: var(--navy-deep); }
+  .btn-ghost { background: #fff; color: var(--navy); border-color: var(--stone-line); }
+  .btn-ghost:hover { border-color: var(--navy); }
+  .btn-small { padding: 6px 10px; font-size: 12.5px; }
+
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+  @media (max-width: 780px) { .layout { grid-template-columns: 1fr; } }
+
+  .roster {
+    background: #fff; border: 1px solid var(--stone-line); border-radius: 12px;
+    padding: 16px; align-self: start;
+  }
+  .roster h3 { margin: 0 0 10px; font-size: 13px; text-transform: none; color: #5c6b63; font-weight: 600; }
+  .roster-empty { font-size: 13px; color: #9a9484; line-height: 1.5; }
+  .person-chip {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--stone); border: 1px solid var(--stone-line); border-radius: 8px;
+    padding: 8px 10px; margin-bottom: 8px; font-size: 13.5px; cursor: pointer;
+  }
+  .person-chip.selected { border-color: var(--gold); background: #fbf3dd; }
+  .person-chip .x { color: #b39a5a; font-size: 15px; line-height: 1; cursor: pointer; padding: 0 2px; }
+  .hint { font-size: 12px; color: #7a8177; margin-top: 8px; line-height: 1.5; }
+
+  .grid-region {
+    background: #fff; border: 1px solid var(--stone-line); border-radius: 12px; padding: 22px;
+  }
+  .axis-label-top { text-align: center; font-size: 12.5px; letter-spacing: 0.4px; color: var(--teal); font-weight: 700; margin-bottom: 6px; }
+  .grid-flex { display: flex; gap: 10px; }
+  .y-axis {
+    display: flex; flex-direction: column-reverse; justify-content: space-between;
+    writing-mode: vertical-rl; text-align: center; font-size: 12.5px; letter-spacing: 0.4px;
+    color: var(--teal); font-weight: 700; padding: 4px 0;
+  }
+  .grid9 {
+    flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 130px);
+    gap: 8px;
+  }
+  .cell {
+    border-radius: 10px; padding: 8px; position: relative;
+    border: 1.5px dashed var(--stone-line); background: #fbf9f4;
+    display: flex; flex-direction: column; gap: 5px; overflow-y: auto;
+  }
+  .cell.can-drop { border-color: var(--gold); background: #fdf6e2; }
+  .cell-label {
+    font-size: 10.5px; font-weight: 700; color: #a89a6f; text-transform: uppercase; letter-spacing: 0.3px;
+    position: sticky; top: 0;
+  }
+  .placed-chip {
+    background: var(--navy); color: #fff; font-size: 12px; border-radius: 6px;
+    padding: 5px 8px; cursor: pointer; display: flex; justify-content: space-between; gap: 6px;
+  }
+  .placed-chip.gold { background: var(--teal); }
+  .status-line {
+    font-size: 13px; color: #5c6b63; margin-bottom: 10px; min-height: 18px;
+  }
+  .status-line.active { color: var(--teal); font-weight: 600; }
+  .status-line.nudge { color: var(--danger); font-weight: 600; }
+  .x-axis-labels {
+    display: grid; grid-template-columns: repeat(3, 1fr); text-align: center;
+    font-size: 11.5px; color: #8a8574; margin-top: 8px; padding-left: 0;
+  }
+
+  .panel {
+    margin-top: 22px; background: #fff; border: 1px solid var(--stone-line); border-radius: 12px; padding: 18px 20px;
+  }
+  .panel h3 { margin: 0 0 8px; font-size: 15px; }
+  .panel textarea {
+    width: 100%; min-height: 70px; border: 1px solid var(--stone-line); border-radius: 8px;
+    padding: 10px; font-family: inherit; font-size: 13.5px; resize: vertical;
+  }
+  .panel-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+
+  .footer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; flex-wrap: wrap; gap: 12px; }
+  .save-note { font-size: 12.5px; color: #8a9089; }
+  .export-buttons { display: flex; gap: 10px; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(20,32,41,0.45); display: none;
+    align-items: center; justify-content: center; z-index: 10;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 22px 24px; width: 90%; max-width: 420px;
+  }
+  .modal h4 { margin: 0 0 6px; font-family: Georgia, serif; font-size: 18px; color: var(--navy-deep); }
+  .modal p { margin: 0 0 12px; font-size: 13px; color: #6b7269; }
+  .modal textarea { width: 100%; min-height: 80px; border: 1px solid var(--stone-line); border-radius: 8px; padding: 10px; font-family: inherit; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+  /* Print styles */
+  @media print {
+    .toolbar, .roster, .hint, .footer-actions, .modal-overlay, header .brand { display: none !important; }
+    .layout { display: block; }
+    .grid-region { border: none; padding: 0; }
+    body { background: #fff; }
+    .cell { border: 1px solid #999; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>The 9-Box Talent Grid</h1>
+      <p class="subhead">Place your team, capture the "why" behind every rating, and leave with a documented, defensible talent review — not just a filled-in chart.</p>
+    </div>
+    <div class="brand">A resource from<br><b>The Plugged Hub</b></div>
+  </header>
+
+  <div class="toolbar">
+    <input type="text" id="nameInput" placeholder="Add a team member (name or initials)…" />
+    <button class="btn-primary" id="addBtn">Add to roster</button>
+  </div>
+
+  <div class="layout">
+    <div class="roster">
+      <h3>Unplaced roster</h3>
+      <div id="rosterList"></div>
+      <div id="rosterEmpty" class="roster-empty">Add names above, then tap a name and tap the box that fits them.</div>
+      <div class="hint">Select a name below, then click a box on the grid to place them there. You'll be asked why — that note travels with the export.</div>
+    </div>
+
+    <div class="grid-region">
+      <div class="status-line" id="statusLine">Select a name from the roster, then click a box to place them.</div>
+      <div class="axis-label-top">→ Performance</div>
+      <div class="grid-flex">
+        <div class="y-axis">Potential →</div>
+        <div>
+          <div class="grid9" id="grid9"></div>
+          <div class="x-axis-labels">
+            <div>Low</div><div>Medium</div><div>High</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Placed this session</h3>
+    <div id="placedSummary" style="font-size:13.5px; color:#5c6b63;">Nobody placed yet.</div>
+  </div>
+
+  <div class="footer-actions">
+    <div class="save-note" id="saveNote">Auto-saves in this browser as you go.</div>
+    <div class="export-buttons">
+      <button class="btn-ghost" id="exportCsv">Export data (CSV)</button>
+      <button class="btn-primary" id="exportPdf">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h4 id="modalName">Why this box?</h4>
+    <p>A quick note now is what protects this rating in a calibration meeting later.</p>
+    <textarea id="reasonInput" placeholder="e.g. Consistently exceeds targets, but hasn't shown readiness to lead others yet…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-ghost btn-small" id="modalCancel">Cancel</button>
+      <button class="btn-primary btn-small" id="modalSave">Save placement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CELL_LABELS = [
+  "Risk", "Inconsistent Player", "Enigma",
+  "Solid Performer", "Core Player", "Future Star",
+  "Trusted Professional", "High Performer", "Star"
+];
+const STORAGE_KEY = "pluggedhub_9box_v1";
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {
+  roster: [],
+  placements: {}
+};
+
+let selectedId = null;
+let pendingCell = null;
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const note = document.getElementById('saveNote');
+  note.textContent = "Saved to this browser • " + new Date().toLocaleTimeString();
+}
+
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function render() {
+  const list = document.getElementById('rosterList');
+  const empty = document.getElementById('rosterEmpty');
+  const unplaced = state.roster.filter(p => !state.placements[p.id]);
+  list.innerHTML = '';
+  empty.style.display = unplaced.length ? 'none' : 'block';
+  unplaced.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'person-chip' + (selectedId === p.id ? ' selected' : '');
+    div.innerHTML = `<span>${p.name}</span><span class="x" data-id="${p.id}">✕</span>`;
+    div.addEventListener('click', (e) => {
+      if (e.target.classList.contains('x')) return;
+      selectedId = (selectedId === p.id) ? null : p.id;
+      render();
+    });
+    div.querySelector('.x').addEventListener('click', () => {
+      state.roster = state.roster.filter(r => r.id !== p.id);
+      delete state.placements[p.id];
+      save(); render();
+    });
+    list.appendChild(div);
+  });
+
+  const status = document.getElementById('statusLine');
+  if (status) {
+    if (selectedId != null) {
+      const p = state.roster.find(r => r.id === selectedId);
+      status.textContent = p ? `${p.name} selected — click a box to place them.` : '';
+      status.className = 'status-line active';
+    } else {
+      status.textContent = 'Select a name from the roster, then click a box to place them.';
+      status.className = 'status-line';
+    }
+  }
+
+  const grid = document.getElementById('grid9');
+  grid.innerHTML = '';
+  const displayOrder = [6,7,8, 3,4,5, 0,1,2];
+  displayOrder.forEach(cellIndex => {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (selectedId != null ? ' can-drop' : '');
+    cell.dataset.cell = cellIndex;
+    cell.innerHTML = `<div class="cell-label">${CELL_LABELS[cellIndex]}</div>`;
+    cell.addEventListener('click', () => {
+      if (selectedId == null) {
+        const status = document.getElementById('statusLine');
+        status.textContent = 'Select a name from the roster first, then click a box.';
+        status.className = 'status-line nudge';
+        setTimeout(() => {
+          status.textContent = 'Select a name from the roster, then click a box to place them.';
+          status.className = 'status-line';
+        }, 1600);
+        return;
+      }
+      openModal(selectedId, cellIndex);
+    });
+    Object.entries(state.placements).forEach(([id, p]) => {
+      if (p.cellIndex === cellIndex) {
+        const chip = document.createElement('div');
+        chip.className = 'placed-chip' + (cellIndex % 2 === 0 ? '' : ' gold');
+        chip.innerHTML = `<span>${p.name}</span>`;
+        chip.title = p.reason || '';
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openModal(id, cellIndex, true);
+        });
+        cell.appendChild(chip);
+      }
+    });
+    grid.appendChild(cell);
+  });
+
+  const summary = document.getElementById('placedSummary');
+  const entries = Object.entries(state.placements);
+  if (!entries.length) {
+    summary.textContent = 'Nobody placed yet.';
+  } else {
+    summary.innerHTML = entries.map(([id, p]) =>
+      `<div style="margin-bottom:8px;"><b>${p.name}</b> — ${CELL_LABELS[p.cellIndex]}<br><span style="color:#8a8574;">${p.reason ? p.reason : '<i>No reason noted</i>'}</span></div>`
+    ).join('');
+  }
+}
+
+function openModal(id, cellIndex, editing) {
+  pendingCell = { id, cellIndex };
+  const person = state.roster.find(r => r.id === id);
+  document.getElementById('modalName').textContent = `Why does ${person.name} belong in "${CELL_LABELS[cellIndex]}"?`;
+  document.getElementById('reasonInput').value = editing ? (state.placements[id].reason || '') : '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+document.getElementById('modalCancel').addEventListener('click', () => {
+  document.getElementById('modalOverlay').classList.remove('open');
+  pendingCell = null;
+});
+
+document.getElementById('modalSave').addEventListener('click', () => {
+  if (!pendingCell) return;
+  const person = state.roster.find(r => r.id === pendingCell.id);
+  state.placements[pendingCell.id] = {
+    cellIndex: pendingCell.cellIndex,
+    reason: document.getElementById('reasonInput').value.trim(),
+    name: person.name
+  };
+  selectedId = null;
+  document.getElementById('modalOverlay').classList.remove('open');
+  save(); render();
+});
+
+document.getElementById('addBtn').addEventListener('click', addPerson);
+document.getElementById('nameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addPerson();
+});
+function addPerson() {
+  const input = document.getElementById('nameInput');
+  const name = input.value.trim();
+  if (!name) return;
+  state.roster.push({ id: uid(), name });
+  input.value = '';
+  save(); render();
+}
+
+document.getElementById('exportCsv').addEventListener('click', () => {
+  let csv = 'Name,9-Box Category,Reason\n';
+  Object.values(state.placements).forEach(p => {
+    const reason = (p.reason || '').replace(/"/g, '""');
+    csv += `"${p.name}","${CELL_LABELS[p.cellIndex]}","${reason}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '9-box-talent-review.csv';
+  a.click();
+});
+
+document.getElementById('exportPdf').addEventListener('click', () => {
+  window.print();
+});
+
+render();
+</script>
+</body>
+</html>
