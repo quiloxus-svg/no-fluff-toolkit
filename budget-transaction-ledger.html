@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Budget & Transaction Ledger — The Plugged Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #111A33;
+    --surface: #F7F4EE;
+    --card: #E9E5DC;
+    --emerald: #146B5C;
+    --green: #2F8A68;
+    --amber: #C98A24;
+    --brick: #B84B4B;
+    --dusty-blue: #5B789A;
+    --text: #171A1F;
+    --muted: #6B7280;
+    --line: #D8D3C6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--surface); color: var(--text);
+    font-family: "DM Sans", -apple-system, sans-serif; font-size: 15px; line-height: 1.5;
+  }
+  h1, h2, h3, .brand { font-family: "Manrope", sans-serif; }
+  .app { max-width: 980px; margin: 0 auto; padding: 32px 20px 100px; }
+
+  /* Header / nav */
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  .brand { font-weight: 700; font-size: 20px; color: var(--ink); }
+  .brand span { color: var(--emerald); }
+  nav { display: flex; gap: 4px; background: var(--card); padding: 4px; border-radius: 10px; }
+  nav button {
+    font-family: "Manrope", sans-serif; font-size: 13.5px; font-weight: 600; padding: 8px 14px;
+    border: none; background: transparent; color: var(--muted); border-radius: 7px; cursor: pointer;
+  }
+  nav button.active { background: var(--ink); color: white; }
+
+  .month-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .month-nav button { background: var(--card); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; color: var(--ink); }
+  .month-nav .month-label { font-weight: 700; font-size: 17px; color: var(--ink); min-width: 150px; text-align: center; }
+
+  /* Snapshot cards */
+  .snapshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .snap-card { background: white; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
+  .snap-card .label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .snap-card .value { font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .snap-card .value.neg { color: var(--brick); }
+
+  /* Sections */
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+
+  /* Next action */
+  .next-action { background: var(--ink); color: white; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; }
+  .next-action .tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #A9B4D0; margin-bottom: 6px; }
+  .next-action .msg { font-size: 15.5px; line-height: 1.5; }
+
+  /* Attention */
+  .attention-list { display: flex; flex-direction: column; gap: 8px; }
+  .attn-item { display: flex; align-items: center; gap: 10px; background: white; border-left: 3px solid var(--brick); border-radius: 8px; padding: 10px 14px; font-size: 14px; }
+  .attn-item.amber { border-left-color: var(--amber); }
+
+  /* Category cards */
+  .cat-grid { display: flex; flex-direction: column; gap: 10px; }
+  .cat-card { background: white; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
+  .cat-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .cat-name { font-weight: 600; color: var(--ink); }
+  .cat-amounts { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cat-bar-track { background: var(--card); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .cat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .cat-bar-fill.green { background: var(--green); }
+  .cat-bar-fill.amber { background: var(--amber); }
+  .cat-bar-fill.red { background: var(--brick); }
+  .cat-bar-fill.gray { background: #C4C4C4; }
+  .cat-status { font-size: 12.5px; font-weight: 600; }
+  .cat-status.green { color: var(--green); }
+  .cat-status.amber { color: var(--amber); }
+  .cat-status.red { color: var(--brick); }
+  .cat-status.gray { color: var(--muted); }
+
+  /* Recent activity / ledger table */
+  .tx-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+  .tx-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 10px 12px; background: var(--card); }
+  .tx-table td { padding: 10px 12px; font-size: 14px; border-top: 1px solid var(--line); }
+  .tx-amount { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .tx-amount.income { color: var(--green); }
+  .tx-amount.expense { color: var(--text); }
+  .tx-actions { display: flex; gap: 10px; }
+  .tx-actions span { font-size: 12.5px; color: var(--muted); cursor: pointer; }
+  .tx-actions span:hover { color: var(--emerald); }
+  .type-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; text-transform: capitalize; }
+  .type-pill.income { background: #DCEFE7; color: var(--green); }
+  .type-pill.expense { background: #F0EEE7; color: var(--text); }
+  .type-pill.savings { background: #E1E9F0; color: var(--dusty-blue); }
+  .type-pill.debt { background: #F3E3DD; color: var(--brick); }
+  .type-pill.transfer { background: #EDEBE3; color: var(--muted); }
+  .type-pill.refund { background: #F5EAD2; color: var(--amber); }
+
+  /* Forms */
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--muted); }
+  .field input, .field select {
+    font-family: "DM Sans", sans-serif; font-size: 14px; padding: 9px 10px; border: 1px solid var(--line);
+    border-radius: 8px; background: white; color: var(--text);
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--emerald); }
+  button.btn {
+    font-family: "Manrope", sans-serif; font-weight: 600; font-size: 14px; padding: 10px 18px;
+    border-radius: 8px; border: none; cursor: pointer;
+  }
+  .btn-primary { background: var(--emerald); color: white; }
+  .btn-ghost { background: white; border: 1px solid var(--line); color: var(--text); }
+  .btn-danger { background: white; border: 1px solid var(--brick); color: var(--brick); }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filters input, .filters select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; font-family: "DM Sans"; }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; background: white; border-radius: 12px; border: 1px dashed var(--line); }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .onboard-wrap { max-width: 520px; margin: 60px auto; text-align: center; }
+  .onboard-wrap h1 { font-size: 26px; color: var(--ink); margin-bottom: 10px; }
+  .onboard-wrap p { color: var(--muted); margin-bottom: 24px; }
+  .onboard-step { background: white; border-radius: 14px; padding: 24px; text-align: left; border: 1px solid var(--line); margin-bottom: 16px; }
+  .onboard-step h3 { margin: 0 0 12px; color: var(--ink); font-size: 15px; }
+
+  .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .cat-list-item:last-child { border-bottom: none; }
+  .remove-link { font-size: 12.5px; color: var(--muted); cursor: pointer; }
+  .remove-link:hover { color: var(--brick); }
+
+  @media (max-width: 600px) {
+    .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+    .tx-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ONBOARDING VIEW -->
+  <div class="view" id="view-onboard">
+    <div class="onboard-wrap">
+      <h1>The Budget &amp; Transaction Ledger</h1>
+      <p>Set up your budget once, log transactions in seconds, and see whether every money category is on track — this month and every month after.</p>
+
+      <div class="onboard-step">
+        <h3>1. Starting balance</h3>
+        <div class="field">
+          <label for="ob-balance">Opening balance (in your primary account right now)</label>
+          <input type="number" id="ob-balance" placeholder="1000">
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <h3>2. Planned monthly income</h3>
+        <div class="field">
+          <label for="ob-income">Total planned income per month</label>
+          <input type="number" id="ob-income" placeholder="4000">
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <h3>3. Budget categories</h3>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">Starter categories are pre-filled — set a monthly amount for each, or remove ones you don't need.</p>
+        <div id="ob-categories"></div>
+      </div>
+
+      <button class="btn btn-primary" id="ob-finish" style="width:100%;padding:14px;font-size:15px;">Set Up My Budget</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="view" id="view-main">
+    <div class="topbar">
+      <div class="brand">The Plugged Hub <span>· Budget Ledger</span></div>
+      <nav>
+        <button data-tab="dashboard" class="active">Dashboard</button>
+        <button data-tab="ledger">Transactions</button>
+        <button data-tab="categories">Categories</button>
+        <button data-tab="settings">Settings</button>
+      </nav>
+    </div>
+
+    <div class="month-nav">
+      <button id="prevMonth">&#8592;</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button id="nextMonth">&#8594;</button>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div class="tab-panel" id="tab-dashboard">
+      <div class="snapshot-grid" id="snapshotGrid"></div>
+      <div class="next-action" id="nextAction"></div>
+
+      <div class="section" id="attentionSection" style="display:none;">
+        <div class="section-title">Needs Attention</div>
+        <div class="attention-list" id="attentionList"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Budget Health</div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Recent Activity</div>
+        <div id="recentActivity"></div>
+      </div>
+    </div>
+
+    <!-- LEDGER TAB -->
+    <div class="tab-panel" id="tab-ledger" style="display:none;">
+      <div class="form-row" id="txForm">
+        <div class="field"><label>Date</label><input type="date" id="tx-date"></div>
+        <div class="field"><label>Description</label><input type="text" id="tx-desc" placeholder="Trader Joe's"></div>
+        <div class="field"><label>Type</label>
+          <select id="tx-type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            <option value="savings">Savings</option>
+            <option value="debt">Debt payment</option>
+            <option value="transfer">Transfer</option>
+            <option value="refund">Refund/Credit</option>
+          </select>
+        </div>
+        <div class="field" id="tx-cat-field"><label>Category</label><select id="tx-category"></select></div>
+        <div class="field"><label>Amount</label><input type="number" id="tx-amount" placeholder="45.00" step="0.01"></div>
+        <button class="btn btn-primary" id="addTx">Add transaction</button>
+      </div>
+
+      <div class="filters">
+        <input type="text" id="filterSearch" placeholder="Search description...">
+        <select id="filterCategory"><option value="">All categories</option></select>
+        <select id="filterType">
+          <option value="">All types</option>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+          <option value="savings">Savings</option>
+          <option value="debt">Debt payment</option>
+          <option value="transfer">Transfer</option>
+          <option value="refund">Refund/Credit</option>
+        </select>
+      </div>
+
+      <div id="ledgerTableWrap"></div>
+    </div>
+
+    <!-- CATEGORIES TAB -->
+    <div class="tab-panel" id="tab-categories" style="display:none;">
+      <div class="section-title">Budget Categories</div>
+      <div class="form-row">
+        <div class="field"><label>New category</label><input type="text" id="newCatName" placeholder="e.g. Pet Care"></div>
+        <div class="field"><label>Monthly budget</label><input type="number" id="newCatBudget" placeholder="100"></div>
+        <button class="btn btn-primary" id="addCategory">Add category</button>
+      </div>
+      <div id="categoryList" style="background:white;border-radius:12px;padding:8px 16px;border:1px solid var(--line);"></div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-panel" id="tab-settings" style="display:none;">
+      <div class="section-title">Settings &amp; Data</div>
+      <div class="onboard-step">
+        <h3>Planned monthly income</h3>
+        <div class="field"><input type="number" id="settingsIncome"></div>
+      </div>
+      <div class="onboard-step">
+        <h3>Opening balance</h3>
+        <div class="field"><input type="number" id="settingsOpening"></div>
+      </div>
+      <div class="onboard-step">
+        <h3>Export your data</h3>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">Your data lives in this browser only. Export a CSV backup regularly.</p>
+        <button class="btn btn-ghost" id="exportCsv">Export all transactions (CSV)</button>
+      </div>
+      <div class="onboard-step">
+        <h3>Reset</h3>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">This permanently deletes all categories and transactions in this browser.</p>
+        <button class="btn btn-danger" id="resetAll">Reset all data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'plugged_hub_budget_ledger_v1';
+const DEFAULT_CATEGORIES = ['Housing','Utilities','Groceries','Transportation','Insurance','Debt Payments','Savings','Dining','Shopping','Health','Personal Care','Entertainment','Subscriptions','Miscellaneous'];
+
+function uid() { return Math.random().toString(36).slice(2,9); }
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function monthKey(dateStr) { return dateStr.slice(0,7); }
+function fmt(n) { return '$' + Number(n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function monthLabel(mk) {
+  const [y,m] = mk.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleString('en-US', {month:'long', year:'numeric'});
+}
+
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+let currentMonth = monthKey(todayStr());
+
+function defaultState() {
+  return {
+    onboarded: false,
+    openingBalance: 0,
+    plannedIncome: 0,
+    categories: DEFAULT_CATEGORIES.map(name => ({ id: uid(), name, budget: 0, archived: false })),
+    transactions: []
+  };
+}
+if (!state) state = defaultState();
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+// ---------- CALCULATION LOGIC (verified separately) ----------
+function categorySpending(month, categoryId) {
+  let total = 0;
+  for (const t of state.transactions) {
+    if (monthKey(t.date) !== month) continue;
+    if (t.type === 'expense' && t.category === categoryId) total += t.amount;
+    if (t.type === 'refund' && t.category === categoryId) total -= t.amount;
+  }
+  return total;
+}
+function categoryStatus(spending, budget) {
+  if (!budget) return spending > 0 ? { label:'Unplanned spending', level:'amber', pct:null } : { label:'No budget set', level:'gray', pct:null };
+  const pct = (spending / budget) * 100;
+  if (pct > 100) return { label:'Over budget', level:'red', pct };
+  if (pct >= 90) return { label:'Near limit', level:'red', pct };
+  if (pct >= 70) return { label:'Watch', level:'amber', pct };
+  return { label:'On track', level:'green', pct };
+}
+function runningBalance() {
+  let bal = state.openingBalance;
+  for (const t of state.transactions) {
+    if (t.type === 'income' || t.type === 'refund') bal += t.amount;
+    else if (t.type === 'expense' || t.type === 'savings' || t.type === 'debt') bal -= t.amount;
+  }
+  return bal;
+}
+function monthTotals(month) {
+  let income=0, expense=0, savings=0, debt=0;
+  for (const t of state.transactions) {
+    if (monthKey(t.date) !== month) continue;
+    if (t.type==='income') income += t.amount;
+    if (t.type==='expense') expense += t.amount;
+    if (t.type==='savings') savings += t.amount;
+    if (t.type==='debt') debt += t.amount;
+  }
+  return { income, expense, savings, debt };
+}
+function activeCategories() { return state.categories.filter(c => !c.archived); }
+
+// ---------- ONBOARDING ----------
+function renderOnboardCategories() {
+  const el = document.getElementById('ob-categories');
+  el.innerHTML = state.categories.map(c => `
+    <div class="cat-list-item">
+      <span>${c.name}</span>
+      <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-ob-budget="${c.id}" value="${c.budget || ''}" placeholder="0">
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-ob-budget]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const cat = state.categories.find(c => c.id === inp.dataset.obBudget);
+      cat.budget = parseFloat(inp.value) || 0;
+    });
+  });
+}
+
+document.getElementById('ob-finish').addEventListener('click', () => {
+  state.openingBalance = parseFloat(document.getElementById('ob-balance').value) || 0;
+  state.plannedIncome = parseFloat(document.getElementById('ob-income').value) || 0;
+  state.onboarded = true;
+  save();
+  showApp();
+});
+
+// ---------- TAB SWITCHING ----------
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+    if (btn.dataset.tab === 'settings') renderSettings();
+    if (btn.dataset.tab === 'categories') renderCategoryList();
+    if (btn.dataset.tab === 'ledger') renderLedger();
+  });
+});
+
+document.getElementById('prevMonth').addEventListener('click', () => { shiftMonth(-1); });
+document.getElementById('nextMonth').addEventListener('click', () => { shiftMonth(1); });
+function shiftMonth(delta) {
+  const [y,m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  currentMonth = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  renderAll();
+}
+
+// ---------- DASHBOARD ----------
+function renderDashboard() {
+  document.getElementById('monthLabel').textContent = monthLabel(currentMonth);
+  const totals = monthTotals(currentMonth);
+  const bal = runningBalance();
+  const remaining = state.plannedIncome - totals.expense - totals.savings - totals.debt;
+
+  document.getElementById('snapshotGrid').innerHTML = `
+    <div class="snap-card"><div class="label">Planned Income</div><div class="value">${fmt(state.plannedIncome)}</div></div>
+    <div class="snap-card"><div class="label">Income Received</div><div class="value">${fmt(totals.income)}</div></div>
+    <div class="snap-card"><div class="label">Total Expenses</div><div class="value">${fmt(totals.expense)}</div></div>
+    <div class="snap-card"><div class="label">Savings + Debt</div><div class="value">${fmt(totals.savings + totals.debt)}</div></div>
+    <div class="snap-card"><div class="label">Remaining Planned</div><div class="value ${remaining<0?'neg':''}">${fmt(remaining)}</div></div>
+    <div class="snap-card"><div class="label">Running Balance</div><div class="value ${bal<0?'neg':''}">${fmt(bal)}</div></div>
+  `;
+
+  const cats = activeCategories();
+  const catData = cats.map(c => {
+    const spending = categorySpending(currentMonth, c.id);
+    const status = categoryStatus(spending, c.budget);
+    return { ...c, spending, status };
+  });
+
+  // Category cards
+  document.getElementById('catGrid').innerHTML = catData.map(c => {
+    const pct = c.status.pct == null ? (c.spending>0?100:0) : Math.min(c.status.pct, 100);
+    return `
+    <div class="cat-card">
+      <div class="cat-top">
+        <div class="cat-name">${c.name}</div>
+        <div class="cat-amounts">${fmt(c.spending)} of ${c.budget ? fmt(c.budget) : '—'}</div>
+      </div>
+      <div class="cat-bar-track"><div class="cat-bar-fill ${c.status.level}" style="width:${pct}%"></div></div>
+      <div class="cat-status ${c.status.level}">${c.status.label}${c.status.pct!=null ? ' · '+Math.round(c.status.pct)+'%' : ''}</div>
+    </div>`;
+  }).join('') || '<div class="empty-state">No categories yet. Add some in the Categories tab.</div>';
+
+  // Attention section
+  const attention = catData.filter(c => c.status.level === 'red' || (c.status.level === 'amber' && c.status.label !== 'Watch'));
+  const watchList = catData.filter(c => c.status.label === 'Watch' || c.status.label === 'Near limit' || c.status.label === 'Over budget' || c.status.label === 'Unplanned spending');
+  if (watchList.length) {
+    document.getElementById('attentionSection').style.display = 'block';
+    document.getElementById('attentionList').innerHTML = watchList.map(c => `
+      <div class="attn-item ${c.status.level === 'amber' ? 'amber' : ''}">
+        ${c.name}: ${c.status.label}${c.status.pct!=null ? ' — ' + Math.round(c.status.pct) + '% used' : ''}
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('attentionSection').style.display = 'none';
+  }
+
+  // Next action
+  const overBudget = catData.filter(c => c.status.label === 'Over budget').sort((a,b)=>b.spending-a.spending)[0];
+  const nearLimit = catData.filter(c => c.status.label === 'Near limit')[0];
+  const monthTx = state.transactions.filter(t => monthKey(t.date) === currentMonth);
+  let action;
+  if (overBudget) {
+    action = `${overBudget.name} is over budget by ${fmt(overBudget.spending - overBudget.budget)}.`;
+  } else if (nearLimit) {
+    action = `${nearLimit.name} is near its limit — ${fmt(nearLimit.budget - nearLimit.spending)} remaining this month.`;
+  } else if (monthTx.length === 0) {
+    action = `No transactions logged yet for ${monthLabel(currentMonth)}. Add your first one to see this month's picture.`;
+  } else if (totals.income < state.plannedIncome * 0.5 && new Date().getDate() > 20) {
+    action = `Income received is well below your planned ${fmt(state.plannedIncome)} this late in the month — worth checking.`;
+  } else {
+    action = `Spending is within plan for ${monthLabel(currentMonth)}. Review your progress before the month ends.`;
+  }
+  document.getElementById('nextAction').innerHTML = `<div class="tag">Next Action</div><div class="msg">${action}</div>`;
+
+  // Recent activity
+  const recent = state.transactions.filter(t => monthKey(t.date) === currentMonth).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  document.getElementById('recentActivity').innerHTML = recent.length ? renderTxTable(recent) : '<div class="empty-state">No transactions yet this month.</div>';
+}
+
+// ---------- LEDGER ----------
+function categoryOptions(selectedId) {
+  return activeCategories().map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.name}</option>`).join('');
+}
+function populateCategorySelects() {
+  document.getElementById('tx-category').innerHTML = categoryOptions();
+  document.getElementById('filterCategory').innerHTML = '<option value="">All categories</option>' + categoryOptions();
+}
+document.getElementById('tx-type').addEventListener('change', (e) => {
+  document.getElementById('tx-cat-field').style.display = (e.target.value === 'expense' || e.target.value === 'refund') ? 'flex' : 'none';
+});
+
+document.getElementById('addTx').addEventListener('click', () => {
+  const date = document.getElementById('tx-date').value || todayStr();
+  const desc = document.getElementById('tx-desc').value.trim();
+  const type = document.getElementById('tx-type').value;
+  const category = (type === 'expense' || type === 'refund') ? document.getElementById('tx-category').value : null;
+  const amount = parseFloat(document.getElementById('tx-amount').value);
+  if (!desc || !amount || amount <= 0) { alert('Please enter a description and a positive amount.'); return; }
+  state.transactions.push({ id: uid(), date, description: desc, type, category, amount });
+  save();
+  document.getElementById('tx-desc').value = '';
+  document.getElementById('tx-amount').value = '';
+  renderAll();
+});
+
+function renderTxTable(txs) {
+  return `<table class="tx-table"><thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Category</th><th style="text-align:right;">Amount</th><th></th></tr></thead><tbody>
+    ${txs.map(t => {
+      const cat = state.categories.find(c => c.id === t.category);
+      const sign = (t.type==='income'||t.type==='refund') ? '+' : (t.type==='transfer'?'':'-');
+      return `<tr>
+        <td>${t.date}</td>
+        <td>${t.description}</td>
+        <td><span class="type-pill ${t.type}">${t.type}</span></td>
+        <td>${cat ? cat.name : '—'}</td>
+        <td class="tx-amount ${t.type==='income'?'income':'expense'}">${sign}${fmt(t.amount)}</td>
+        <td class="tx-actions"><span data-del="${t.id}">Delete</span></td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
+function renderLedger() {
+  populateCategorySelects();
+  if (!document.getElementById('tx-date').value) document.getElementById('tx-date').value = todayStr();
+  applyLedgerFilters();
+}
+function applyLedgerFilters() {
+  const search = document.getElementById('filterSearch').value.toLowerCase();
+  const catFilter = document.getElementById('filterCategory').value;
+  const typeFilter = document.getElementById('filterType').value;
+  let txs = state.transactions.filter(t => monthKey(t.date) === currentMonth);
+  if (search) txs = txs.filter(t => t.description.toLowerCase().includes(search));
+  if (catFilter) txs = txs.filter(t => t.category === catFilter);
+  if (typeFilter) txs = txs.filter(t => t.type === typeFilter);
+  txs.sort((a,b) => b.date.localeCompare(a.date));
+  document.getElementById('ledgerTableWrap').innerHTML = txs.length ? renderTxTable(txs) : '<div class="empty-state">No transactions match.</div>';
+  document.querySelectorAll('[data-del]').forEach(el => {
+    el.addEventListener('click', () => {
+      state.transactions = state.transactions.filter(t => t.id !== el.dataset.del);
+      save(); renderAll();
+    });
+  });
+}
+['filterSearch','filterCategory','filterType'].forEach(id => {
+  document.getElementById(id).addEventListener('input', applyLedgerFilters);
+});
+
+// ---------- CATEGORIES ----------
+document.getElementById('addCategory').addEventListener('click', () => {
+  const name = document.getElementById('newCatName').value.trim();
+  const budget = parseFloat(document.getElementById('newCatBudget').value) || 0;
+  if (!name) return;
+  state.categories.push({ id: uid(), name, budget, archived: false });
+  save();
+  document.getElementById('newCatName').value = '';
+  document.getElementById('newCatBudget').value = '';
+  renderCategoryList();
+});
+function renderCategoryList() {
+  document.getElementById('categoryList').innerHTML = activeCategories().map(c => `
+    <div class="cat-list-item">
+      <span>${c.name}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-cat-budget="${c.id}" value="${c.budget||''}" placeholder="0">
+        <span class="remove-link" data-cat-archive="${c.id}">Archive</span>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('[data-cat-budget]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const cat = state.categories.find(c => c.id === inp.dataset.catBudget);
+      cat.budget = parseFloat(inp.value) || 0;
+      save();
+    });
+  });
+  document.querySelectorAll('[data-cat-archive]').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = state.categories.find(c => c.id === el.dataset.catArchive);
+      cat.archived = true;
+      save(); renderCategoryList();
+    });
+  });
+}
+
+// ---------- SETTINGS ----------
+function renderSettings() {
+  document.getElementById('settingsIncome').value = state.plannedIncome;
+  document.getElementById('settingsOpening').value = state.openingBalance;
+}
+document.getElementById('settingsIncome').addEventListener('change', (e) => { state.plannedIncome = parseFloat(e.target.value)||0; save(); });
+document.getElementById('settingsOpening').addEventListener('change', (e) => { state.openingBalance = parseFloat(e.target.value)||0; save(); });
+document.getElementById('exportCsv').addEventListener('click', () => {
+  let csv = 'Date,Description,Type,Category,Amount\n';
+  state.transactions.forEach(t => {
+    const cat = state.categories.find(c => c.id === t.category);
+    csv += `${t.date},"${t.description}",${t.type},"${cat?cat.name:''}",${t.amount}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'budget-ledger-export.csv';
+  a.click();
+});
+document.getElementById('resetAll').addEventListener('click', () => {
+  if (confirm('This will permanently delete all your categories and transactions. Type-confirm by clicking OK.')) {
+    if (confirm('Are you absolutely sure? This cannot be undone.')) {
+      state = defaultState();
+      save();
+      location.reload();
+    }
+  }
+});
+
+// ---------- INIT ----------
+function renderAll() {
+  renderDashboard();
+  if (document.getElementById('tab-ledger').style.display !== 'none') renderLedger();
+}
+function showApp() {
+  document.getElementById('view-onboard').classList.remove('active');
+  document.getElementById('view-main').classList.add('active');
+  renderAll();
+}
+if (state.onboarded) {
+  showApp();
+} else {
+  renderOnboardCategories();
+  document.getElementById('view-onboard').classList.add('active');
+}
+</script>
+</body>
+</html>
