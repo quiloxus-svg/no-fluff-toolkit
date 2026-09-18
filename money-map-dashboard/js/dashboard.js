@@ -1,6 +1,7 @@
 import { fmt, monthLabel, monthTotals, runningBalance, categorySpending, categoryStatus,
          goalsBufferCurrentAmount, goalsBufferStatus, incomeReceivedFromSource } from './calculations.js';
 import { renderTxTable } from './transactions.js';
+import { upcomingBills } from './bills.js';
 
 function activeCategories(state) { return state.categories.filter(c => !c.archived); }
 function activeGoalsBuffers(state) { return state.goalsBuffers.filter(g => !g.archived); }
@@ -58,6 +59,12 @@ export function renderDashboard(ctx) {
     </div>`;
   }).join('') || '<div class="empty-state">No goals or buffers yet.</div>';
 
+  const upcoming = upcomingBills(state, 14);
+  document.getElementById('upcomingBillsList').innerHTML = upcoming.length ? upcoming.map(b => {
+    const cat = state.categories.find(c => c.id === b.category);
+    return `<div class="income-row"><span class="name">${b.name}${cat ? ' · ' + cat.name : ''}</span><span class="figures ${b.status.level === 'red' ? '' : ''}">${fmt(b.typicalAmount)} — ${b.status.label} (${b.due})</span></div>`;
+  }).join('') : '<div class="empty-state">No bills due in the next 14 days.</div>';
+
   const watchList = catData.filter(c => ['Watch', 'Needs attention', 'Over plan', 'Unplanned spending'].includes(c.status.label));
   const attnSection = document.getElementById('attentionSection');
   if (watchList.length) {
@@ -67,11 +74,23 @@ export function renderDashboard(ctx) {
     ).join('');
   } else { attnSection.style.display = 'none'; }
 
+  const overdueBills = upcoming.filter(b => b.status.label === 'Overdue');
+  const dueSoonBills = upcoming.filter(b => b.status.label === 'Due soon');
   const overPlan = catData.filter(c => c.status.label === 'Over plan').sort((a, b) => b.spending - a.spending)[0];
   const needsAttn = catData.filter(c => c.status.label === 'Needs attention')[0];
   const monthTx = state.transactions.filter(t => t.date.slice(0, 7) === currentMonth);
   let action;
-  if (overPlan) action = `${overPlan.name} is over plan by ${fmt(overPlan.spending - overPlan.budget)}.`;
+  if (overdueBills.length) {
+    const total = overdueBills.reduce((s, b) => s + b.typicalAmount, 0);
+    action = overdueBills.length === 1
+      ? `${overdueBills[0].name} is overdue (${fmt(overdueBills[0].typicalAmount)}).`
+      : `${overdueBills.length} bills totaling ${fmt(total)} are overdue.`;
+  } else if (dueSoonBills.length) {
+    const total = dueSoonBills.reduce((s, b) => s + b.typicalAmount, 0);
+    action = dueSoonBills.length === 1
+      ? `${dueSoonBills[0].name} (${fmt(dueSoonBills[0].typicalAmount)}) is due ${dueSoonBills[0].due}.`
+      : `${dueSoonBills.length} bills totaling ${fmt(total)} are due within 7 days.`;
+  } else if (overPlan) action = `${overPlan.name} is over plan by ${fmt(overPlan.spending - overPlan.budget)}.`;
   else if (needsAttn) action = `${needsAttn.name} needs attention — ${fmt(needsAttn.budget - needsAttn.spending)} remaining this month.`;
   else if (monthTx.length === 0) action = `No transactions logged yet for ${monthLabel(currentMonth)}. Add your first one to see this month's picture.`;
   else action = `Spending is within plan for ${monthLabel(currentMonth)}. Review your progress before the month ends.`;
