@@ -6,6 +6,7 @@ import { initTransactions, renderLedger } from './transactions.js';
 import { initCategories, renderCategoriesTab } from './categories.js';
 import { initSavingsTab, renderSavingsTab, purposeTypeOptions } from './savings.js';
 import { initPaychecksTab, renderPaychecksTab } from './paychecks.js';
+import { initBillsTab, renderBillsTab } from './bills.js';
 
 let state = loadState();
 let currentMonth = todayStr().slice(0, 7);
@@ -36,10 +37,15 @@ initNavigation({
   onTabChange: (tab) => {
     if (tab === '__prevMonth') return shiftMonth(-1);
     if (tab === '__nextMonth') return shiftMonth(1);
+    // Dashboard must always recompute on entry — it's the one screen every other
+    // tab's edits (bills, categories, goals, sources) need to stay in sync with,
+    // and none of those tabs call renderAll() on every edit.
+    if (tab === 'dashboard') renderDashboard(ctx);
     if (tab === 'transactions') renderLedger(ctx);
     if (tab === 'categories') renderCategoriesTab(ctx);
     if (tab === 'savings') renderSavingsTab(ctx);
     if (tab === 'paychecks') renderPaychecksTab(ctx);
+    if (tab === 'bills') renderBillsTab(ctx);
     if (tab === 'settings') renderSettings();
   },
 });
@@ -47,6 +53,7 @@ initTransactions(ctx);
 initCategories(ctx);
 initSavingsTab(ctx);
 initPaychecksTab(ctx);
+initBillsTab(ctx);
 document.getElementById('newGoalPurpose').innerHTML = purposeTypeOptions();
 
 // ---------- Settings ----------
