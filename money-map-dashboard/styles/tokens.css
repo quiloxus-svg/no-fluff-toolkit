@@ -1,0 +1,15 @@
+:root {
+  --ink: #111A33;
+  --surface: #F7F4EE;
+  --card: #E9E5DC;
+  --emerald: #146B5C;
+  --green: #2F8A68;
+  --amber: #C98A24;
+  --brick: #B84B4B;
+  --dusty-blue: #5B789A;
+  --text: #171A1F;
+  --muted: #6B7280;
+  --line: #D8D3C6;
+  --font-display: "Manrope", sans-serif;
+  --font-body: "DM Sans", -apple-system, sans-serif;
+}
