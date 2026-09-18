@@ -1,0 +1,14 @@
+.paycheck-card { background: white; border-radius: 12px; padding: 16px 18px; border: 1px solid var(--line); margin-bottom: 14px; }
+.paycheck-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap; gap: 6px; }
+.paycheck-head .name { font-weight: 700; color: var(--ink); font-size: 16px; }
+.paycheck-head .amount { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13.5px; }
+.paycheck-status { font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+.paycheck-status.job-done { color: var(--green); }
+.paycheck-status.job-remaining { color: var(--amber); }
+.paycheck-status.job-over { color: var(--brick); }
+
+.alloc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.alloc-row:last-child { border-bottom: none; }
+.alloc-row .alloc-amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+.alloc-add-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.alloc-add-row select, .alloc-add-row input { padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; font-family: var(--font-body); }
