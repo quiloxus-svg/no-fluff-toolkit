@@ -29,7 +29,6 @@
   h1, h2, h3, .brand { font-family: "Manrope", sans-serif; }
   .app { max-width: 980px; margin: 0 auto; padding: 32px 20px 100px; }
 
-  /* Header / nav */
   .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
   .brand { font-weight: 700; font-size: 20px; color: var(--ink); }
   .brand span { color: var(--emerald); }
@@ -44,28 +43,24 @@
   .month-nav button { background: var(--card); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; color: var(--ink); }
   .month-nav .month-label { font-weight: 700; font-size: 17px; color: var(--ink); min-width: 150px; text-align: center; }
 
-  /* Snapshot cards */
   .snapshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
   .snap-card { background: white; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
   .snap-card .label { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
   .snap-card .value { font-size: 22px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
   .snap-card .value.neg { color: var(--brick); }
 
-  /* Sections */
   .section { margin-bottom: 28px; }
   .section-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+  .section-subtitle { font-size: 13px; color: var(--muted); margin: -6px 0 12px; }
 
-  /* Next action */
   .next-action { background: var(--ink); color: white; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; }
   .next-action .tag { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #A9B4D0; margin-bottom: 6px; }
   .next-action .msg { font-size: 15.5px; line-height: 1.5; }
 
-  /* Attention */
   .attention-list { display: flex; flex-direction: column; gap: 8px; }
   .attn-item { display: flex; align-items: center; gap: 10px; background: white; border-left: 3px solid var(--brick); border-radius: 8px; padding: 10px 14px; font-size: 14px; }
   .attn-item.amber { border-left-color: var(--amber); }
 
-  /* Category cards */
   .cat-grid { display: flex; flex-direction: column; gap: 10px; }
   .cat-card { background: white; border-radius: 12px; padding: 14px 16px; border: 1px solid var(--line); }
   .cat-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -77,13 +72,19 @@
   .cat-bar-fill.amber { background: var(--amber); }
   .cat-bar-fill.red { background: var(--brick); }
   .cat-bar-fill.gray { background: #C4C4C4; }
+  .cat-bar-fill.blue { background: var(--dusty-blue); }
   .cat-status { font-size: 12.5px; font-weight: 600; }
   .cat-status.green { color: var(--green); }
   .cat-status.amber { color: var(--amber); }
   .cat-status.red { color: var(--brick); }
   .cat-status.gray { color: var(--muted); }
+  .cat-status.blue { color: var(--dusty-blue); }
 
-  /* Recent activity / ledger table */
+  .income-row { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 10px; padding: 12px 16px; border: 1px solid var(--line); margin-bottom: 8px; }
+  .income-row .name { font-weight: 600; color: var(--ink); }
+  .income-row .figures { font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .income-row .figures strong { color: var(--green); font-weight: 700; }
+
   .tx-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
   .tx-table th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding: 10px 12px; background: var(--card); }
   .tx-table td { padding: 10px 12px; font-size: 14px; border-top: 1px solid var(--line); }
@@ -101,7 +102,6 @@
   .type-pill.transfer { background: #EDEBE3; color: var(--muted); }
   .type-pill.refund { background: #F5EAD2; color: var(--amber); }
 
-  /* Forms */
   .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 12px; color: var(--muted); }
@@ -137,9 +137,13 @@
   .remove-link { font-size: 12.5px; color: var(--muted); cursor: pointer; }
   .remove-link:hover { color: var(--brick); }
 
+  .subsection { margin-bottom: 26px; }
+  .subsection-title { font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+
   @media (max-width: 600px) {
     .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
     .tx-table { display: block; overflow-x: auto; }
+    .income-row { flex-direction: column; align-items: flex-start; gap: 4px; }
   }
 </style>
 </head>
@@ -161,17 +165,26 @@
       </div>
 
       <div class="onboard-step">
-        <h3>2. Planned monthly income</h3>
-        <div class="field">
-          <label for="ob-income">Total planned income per month</label>
-          <input type="number" id="ob-income" placeholder="4000">
+        <h3>2. Income sources</h3>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">Add each paycheck or income stream separately — you'll see each one tracked on its own.</p>
+        <div id="ob-income-sources"></div>
+        <div class="form-row" style="margin-top:12px;margin-bottom:0;">
+          <div class="field"><input type="text" id="ob-new-source-name" placeholder="e.g. Paycheck 2"></div>
+          <div class="field"><input type="number" id="ob-new-source-amount" placeholder="4000"></div>
+          <button class="btn btn-ghost" id="ob-add-source">Add income source</button>
         </div>
       </div>
 
       <div class="onboard-step">
-        <h3>3. Budget categories</h3>
+        <h3>3. Expense categories</h3>
         <p style="margin-top:0;color:var(--muted);font-size:13.5px;">Starter categories are pre-filled — set a monthly amount for each, or remove ones you don't need.</p>
         <div id="ob-categories"></div>
+      </div>
+
+      <div class="onboard-step">
+        <h3>4. Savings categories</h3>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">Give each savings goal its own monthly target — property tax, emergency fund, gifts, whatever you're setting aside for.</p>
+        <div id="ob-savings-categories"></div>
       </div>
 
       <button class="btn btn-primary" id="ob-finish" style="width:100%;padding:14px;font-size:15px;">Set Up My Budget</button>
@@ -207,8 +220,18 @@
       </div>
 
       <div class="section">
+        <div class="section-title">Income Sources</div>
+        <div id="incomeSourcesGrid"></div>
+      </div>
+
+      <div class="section">
         <div class="section-title">Budget Health</div>
         <div class="cat-grid" id="catGrid"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Savings Progress</div>
+        <div class="cat-grid" id="savingsGrid"></div>
       </div>
 
       <div class="section">
@@ -233,6 +256,8 @@
           </select>
         </div>
         <div class="field" id="tx-cat-field"><label>Category</label><select id="tx-category"></select></div>
+        <div class="field" id="tx-savings-field" style="display:none;"><label>Savings goal</label><select id="tx-savings-category"></select></div>
+        <div class="field" id="tx-source-field" style="display:none;"><label>Income source</label><select id="tx-source"></select></div>
         <div class="field"><label>Amount</label><input type="number" id="tx-amount" placeholder="45.00" step="0.01"></div>
         <button class="btn btn-primary" id="addTx">Add transaction</button>
       </div>
@@ -256,22 +281,40 @@
 
     <!-- CATEGORIES TAB -->
     <div class="tab-panel" id="tab-categories" style="display:none;">
-      <div class="section-title">Budget Categories</div>
-      <div class="form-row">
-        <div class="field"><label>New category</label><input type="text" id="newCatName" placeholder="e.g. Pet Care"></div>
-        <div class="field"><label>Monthly budget</label><input type="number" id="newCatBudget" placeholder="100"></div>
-        <button class="btn btn-primary" id="addCategory">Add category</button>
+      <div class="subsection">
+        <div class="subsection-title">Income Sources</div>
+        <div class="form-row">
+          <div class="field"><label>Source name</label><input type="text" id="newSourceName" placeholder="e.g. Freelance"></div>
+          <div class="field"><label>Planned monthly amount</label><input type="number" id="newSourceAmount" placeholder="500"></div>
+          <button class="btn btn-primary" id="addSource">Add source</button>
+        </div>
+        <div id="sourceList" style="background:white;border-radius:12px;padding:8px 16px;border:1px solid var(--line);"></div>
       </div>
-      <div id="categoryList" style="background:white;border-radius:12px;padding:8px 16px;border:1px solid var(--line);"></div>
+
+      <div class="subsection">
+        <div class="subsection-title">Expense Categories</div>
+        <div class="form-row">
+          <div class="field"><label>New category</label><input type="text" id="newCatName" placeholder="e.g. Pet Care"></div>
+          <div class="field"><label>Monthly budget</label><input type="number" id="newCatBudget" placeholder="100"></div>
+          <button class="btn btn-primary" id="addCategory">Add category</button>
+        </div>
+        <div id="categoryList" style="background:white;border-radius:12px;padding:8px 16px;border:1px solid var(--line);"></div>
+      </div>
+
+      <div class="subsection">
+        <div class="subsection-title">Savings Categories</div>
+        <div class="form-row">
+          <div class="field"><label>New savings goal</label><input type="text" id="newSavName" placeholder="e.g. Vacation Fund"></div>
+          <div class="field"><label>Monthly target</label><input type="number" id="newSavTarget" placeholder="150"></div>
+          <button class="btn btn-primary" id="addSavCategory">Add savings goal</button>
+        </div>
+        <div id="savingsCategoryList" style="background:white;border-radius:12px;padding:8px 16px;border:1px solid var(--line);"></div>
+      </div>
     </div>
 
     <!-- SETTINGS TAB -->
     <div class="tab-panel" id="tab-settings" style="display:none;">
       <div class="section-title">Settings &amp; Data</div>
-      <div class="onboard-step">
-        <h3>Planned monthly income</h3>
-        <div class="field"><input type="number" id="settingsIncome"></div>
-      </div>
       <div class="onboard-step">
         <h3>Opening balance</h3>
         <div class="field"><input type="number" id="settingsOpening"></div>
@@ -283,7 +326,7 @@
       </div>
       <div class="onboard-step">
         <h3>Reset</h3>
-        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">This permanently deletes all categories and transactions in this browser.</p>
+        <p style="margin-top:0;color:var(--muted);font-size:13.5px;">This permanently deletes all categories, income sources, and transactions in this browser.</p>
         <button class="btn btn-danger" id="resetAll">Reset all data</button>
       </div>
     </div>
@@ -291,8 +334,9 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'plugged_hub_budget_ledger_v1';
-const DEFAULT_CATEGORIES = ['Housing','Utilities','Groceries','Transportation','Insurance','Debt Payments','Savings','Dining','Shopping','Health','Personal Care','Entertainment','Subscriptions','Miscellaneous'];
+const STORAGE_KEY = 'plugged_hub_budget_ledger_v2';
+const DEFAULT_EXPENSE_CATEGORIES = ['Housing','Utilities','Groceries','Transportation','Insurance','Debt Payments','Dining','Shopping','Health','Personal Care','Entertainment','Subscriptions','Miscellaneous'];
+const DEFAULT_SAVINGS_CATEGORIES = ['Emergency Fund','Property Tax','Medical','Pet Care','Gifts','Travel'];
 
 function uid() { return Math.random().toString(36).slice(2,9); }
 function todayStr() { return new Date().toISOString().slice(0,10); }
@@ -306,16 +350,36 @@ function monthLabel(mk) {
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
 let currentMonth = monthKey(todayStr());
 
+function migrateOldState() {
+  const old = JSON.parse(localStorage.getItem('plugged_hub_budget_ledger_v1') || 'null');
+  if (!old) return null;
+  const cats = (old.categories || []).map(c => ({ ...c, kind: 'expense' }));
+  return {
+    onboarded: old.onboarded || false,
+    openingBalance: old.openingBalance || 0,
+    incomeSources: old.plannedIncome ? [{ id: uid(), name: 'Primary Income', planned: old.plannedIncome, archived: false }] : [],
+    categories: cats,
+    transactions: (old.transactions || []).map(t => ({ ...t }))
+  };
+}
+
 function defaultState() {
+  const migrated = migrateOldState();
+  if (migrated) return migrated;
   return {
     onboarded: false,
     openingBalance: 0,
-    plannedIncome: 0,
-    categories: DEFAULT_CATEGORIES.map(name => ({ id: uid(), name, budget: 0, archived: false })),
+    incomeSources: [],
+    categories: [
+      ...DEFAULT_EXPENSE_CATEGORIES.map(name => ({ id: uid(), name, budget: 0, archived: false, kind: 'expense' })),
+      ...DEFAULT_SAVINGS_CATEGORIES.map(name => ({ id: uid(), name, budget: 0, archived: false, kind: 'savings' }))
+    ],
     transactions: []
   };
 }
 if (!state) state = defaultState();
+state.categories.forEach(c => { if (!c.kind) c.kind = 'expense'; });
+if (!state.incomeSources) state.incomeSources = [];
 
 function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
@@ -337,6 +401,29 @@ function categoryStatus(spending, budget) {
   if (pct >= 70) return { label:'Watch', level:'amber', pct };
   return { label:'On track', level:'green', pct };
 }
+function savingsContributed(month, categoryId) {
+  let total = 0;
+  for (const t of state.transactions) {
+    if (monthKey(t.date) !== month) continue;
+    if (t.type === 'savings' && t.category === categoryId) total += t.amount;
+  }
+  return total;
+}
+function savingsStatus(saved, target) {
+  if (!target) return { label: 'No target set', level: 'gray', pct: null };
+  if (saved <= 0) return { label: 'Not started', level: 'gray', pct: 0 };
+  const pct = (saved / target) * 100;
+  if (saved >= target) return { label: 'Target met', level: 'green', pct };
+  return { label: 'In progress', level: 'blue', pct };
+}
+function incomeReceived(month, sourceId) {
+  let total = 0;
+  for (const t of state.transactions) {
+    if (monthKey(t.date) !== month) continue;
+    if (t.type === 'income' && t.source === sourceId) total += t.amount;
+  }
+  return total;
+}
 function runningBalance() {
   let bal = state.openingBalance;
   for (const t of state.transactions) {
@@ -356,12 +443,51 @@ function monthTotals(month) {
   }
   return { income, expense, savings, debt };
 }
-function activeCategories() { return state.categories.filter(c => !c.archived); }
+function activeCategories(kind) { return state.categories.filter(c => !c.archived && (kind ? c.kind === kind : true)); }
+function activeSources() { return state.incomeSources.filter(s => !s.archived); }
+function totalPlannedIncome() { return activeSources().reduce((sum, s) => sum + (s.planned || 0), 0); }
 
 // ---------- ONBOARDING ----------
+function renderOnboardIncomeSources() {
+  const el = document.getElementById('ob-income-sources');
+  if (!state.incomeSources.length) {
+    state.incomeSources.push({ id: uid(), name: 'Primary Income', planned: 0, archived: false });
+  }
+  el.innerHTML = state.incomeSources.map(s => `
+    <div class="cat-list-item">
+      <span>${s.name}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-ob-source="${s.id}" value="${s.planned || ''}" placeholder="0">
+        <span class="remove-link" data-ob-source-remove="${s.id}">Remove</span>
+      </div>
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-ob-source]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const src = state.incomeSources.find(s => s.id === inp.dataset.obSource);
+      src.planned = parseFloat(inp.value) || 0;
+    });
+  });
+  el.querySelectorAll('[data-ob-source-remove]').forEach(link => {
+    link.addEventListener('click', () => {
+      state.incomeSources = state.incomeSources.filter(s => s.id !== link.dataset.obSourceRemove);
+      renderOnboardIncomeSources();
+    });
+  });
+}
+document.getElementById('ob-add-source').addEventListener('click', () => {
+  const nameInput = document.getElementById('ob-new-source-name');
+  const amtInput = document.getElementById('ob-new-source-amount');
+  const name = nameInput.value.trim();
+  if (!name) return;
+  state.incomeSources.push({ id: uid(), name, planned: parseFloat(amtInput.value) || 0, archived: false });
+  nameInput.value = ''; amtInput.value = '';
+  renderOnboardIncomeSources();
+});
+
 function renderOnboardCategories() {
   const el = document.getElementById('ob-categories');
-  el.innerHTML = state.categories.map(c => `
+  el.innerHTML = activeCategories('expense').map(c => `
     <div class="cat-list-item">
       <span>${c.name}</span>
       <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-ob-budget="${c.id}" value="${c.budget || ''}" placeholder="0">
@@ -374,10 +500,24 @@ function renderOnboardCategories() {
     });
   });
 }
+function renderOnboardSavingsCategories() {
+  const el = document.getElementById('ob-savings-categories');
+  el.innerHTML = activeCategories('savings').map(c => `
+    <div class="cat-list-item">
+      <span>${c.name}</span>
+      <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-ob-sav="${c.id}" value="${c.budget || ''}" placeholder="0">
+    </div>
+  `).join('');
+  el.querySelectorAll('[data-ob-sav]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const cat = state.categories.find(c => c.id === inp.dataset.obSav);
+      cat.budget = parseFloat(inp.value) || 0;
+    });
+  });
+}
 
 document.getElementById('ob-finish').addEventListener('click', () => {
   state.openingBalance = parseFloat(document.getElementById('ob-balance').value) || 0;
-  state.plannedIncome = parseFloat(document.getElementById('ob-income').value) || 0;
   state.onboarded = true;
   save();
   showApp();
@@ -391,7 +531,7 @@ document.querySelectorAll('nav button').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
     document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
     if (btn.dataset.tab === 'settings') renderSettings();
-    if (btn.dataset.tab === 'categories') renderCategoryList();
+    if (btn.dataset.tab === 'categories') { renderCategoryList(); renderSavingsCategoryList(); renderSourceList(); }
     if (btn.dataset.tab === 'ledger') renderLedger();
   });
 });
@@ -410,10 +550,11 @@ function renderDashboard() {
   document.getElementById('monthLabel').textContent = monthLabel(currentMonth);
   const totals = monthTotals(currentMonth);
   const bal = runningBalance();
-  const remaining = state.plannedIncome - totals.expense - totals.savings - totals.debt;
+  const plannedIncome = totalPlannedIncome();
+  const remaining = plannedIncome - totals.expense - totals.savings - totals.debt;
 
   document.getElementById('snapshotGrid').innerHTML = `
-    <div class="snap-card"><div class="label">Planned Income</div><div class="value">${fmt(state.plannedIncome)}</div></div>
+    <div class="snap-card"><div class="label">Planned Income</div><div class="value">${fmt(plannedIncome)}</div></div>
     <div class="snap-card"><div class="label">Income Received</div><div class="value">${fmt(totals.income)}</div></div>
     <div class="snap-card"><div class="label">Total Expenses</div><div class="value">${fmt(totals.expense)}</div></div>
     <div class="snap-card"><div class="label">Savings + Debt</div><div class="value">${fmt(totals.savings + totals.debt)}</div></div>
@@ -421,14 +562,19 @@ function renderDashboard() {
     <div class="snap-card"><div class="label">Running Balance</div><div class="value ${bal<0?'neg':''}">${fmt(bal)}</div></div>
   `;
 
-  const cats = activeCategories();
+  const sources = activeSources();
+  document.getElementById('incomeSourcesGrid').innerHTML = sources.length ? sources.map(s => {
+    const received = incomeReceived(currentMonth, s.id);
+    return `<div class="income-row"><span class="name">${s.name}</span><span class="figures">${fmt(s.planned)} planned / <strong>${fmt(received)}</strong> received</span></div>`;
+  }).join('') : '<div class="empty-state">No income sources yet. Add one in the Categories tab.</div>';
+
+  const cats = activeCategories('expense');
   const catData = cats.map(c => {
     const spending = categorySpending(currentMonth, c.id);
     const status = categoryStatus(spending, c.budget);
     return { ...c, spending, status };
   });
 
-  // Category cards
   document.getElementById('catGrid').innerHTML = catData.map(c => {
     const pct = c.status.pct == null ? (c.spending>0?100:0) : Math.min(c.status.pct, 100);
     return `
@@ -440,10 +586,27 @@ function renderDashboard() {
       <div class="cat-bar-track"><div class="cat-bar-fill ${c.status.level}" style="width:${pct}%"></div></div>
       <div class="cat-status ${c.status.level}">${c.status.label}${c.status.pct!=null ? ' · '+Math.round(c.status.pct)+'%' : ''}</div>
     </div>`;
-  }).join('') || '<div class="empty-state">No categories yet. Add some in the Categories tab.</div>';
+  }).join('') || '<div class="empty-state">No expense categories yet. Add some in the Categories tab.</div>';
 
-  // Attention section
-  const attention = catData.filter(c => c.status.level === 'red' || (c.status.level === 'amber' && c.status.label !== 'Watch'));
+  const savCats = activeCategories('savings');
+  const savData = savCats.map(c => {
+    const saved = savingsContributed(currentMonth, c.id);
+    const status = savingsStatus(saved, c.budget);
+    return { ...c, saved, status };
+  });
+  document.getElementById('savingsGrid').innerHTML = savData.map(c => {
+    const pct = c.status.pct == null ? 0 : Math.min(c.status.pct, 100);
+    return `
+    <div class="cat-card">
+      <div class="cat-top">
+        <div class="cat-name">${c.name}</div>
+        <div class="cat-amounts">${fmt(c.saved)} of ${c.budget ? fmt(c.budget) : '—'}</div>
+      </div>
+      <div class="cat-bar-track"><div class="cat-bar-fill ${c.status.level}" style="width:${pct}%"></div></div>
+      <div class="cat-status ${c.status.level}">${c.status.label}${c.status.pct!=null ? ' · '+Math.round(c.status.pct)+'%' : ''}</div>
+    </div>`;
+  }).join('') || '<div class="empty-state">No savings goals yet. Add some in the Categories tab.</div>';
+
   const watchList = catData.filter(c => c.status.label === 'Watch' || c.status.label === 'Near limit' || c.status.label === 'Over budget' || c.status.label === 'Unplanned spending');
   if (watchList.length) {
     document.getElementById('attentionSection').style.display = 'block';
@@ -456,7 +619,6 @@ function renderDashboard() {
     document.getElementById('attentionSection').style.display = 'none';
   }
 
-  // Next action
   const overBudget = catData.filter(c => c.status.label === 'Over budget').sort((a,b)=>b.spending-a.spending)[0];
   const nearLimit = catData.filter(c => c.status.label === 'Near limit')[0];
   const monthTx = state.transactions.filter(t => monthKey(t.date) === currentMonth);
@@ -467,38 +629,49 @@ function renderDashboard() {
     action = `${nearLimit.name} is near its limit — ${fmt(nearLimit.budget - nearLimit.spending)} remaining this month.`;
   } else if (monthTx.length === 0) {
     action = `No transactions logged yet for ${monthLabel(currentMonth)}. Add your first one to see this month's picture.`;
-  } else if (totals.income < state.plannedIncome * 0.5 && new Date().getDate() > 20) {
-    action = `Income received is well below your planned ${fmt(state.plannedIncome)} this late in the month — worth checking.`;
+  } else if (plannedIncome > 0 && totals.income < plannedIncome * 0.5 && new Date().getDate() > 20) {
+    action = `Income received is well below your planned ${fmt(plannedIncome)} this late in the month — worth checking.`;
   } else {
     action = `Spending is within plan for ${monthLabel(currentMonth)}. Review your progress before the month ends.`;
   }
   document.getElementById('nextAction').innerHTML = `<div class="tag">Next Action</div><div class="msg">${action}</div>`;
 
-  // Recent activity
   const recent = state.transactions.filter(t => monthKey(t.date) === currentMonth).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
   document.getElementById('recentActivity').innerHTML = recent.length ? renderTxTable(recent) : '<div class="empty-state">No transactions yet this month.</div>';
 }
 
 // ---------- LEDGER ----------
-function categoryOptions(selectedId) {
-  return activeCategories().map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.name}</option>`).join('');
+function categoryOptions(kind, selectedId) {
+  return activeCategories(kind).map(c => `<option value="${c.id}" ${c.id===selectedId?'selected':''}>${c.name}</option>`).join('');
+}
+function sourceOptions(selectedId) {
+  return activeSources().map(s => `<option value="${s.id}" ${s.id===selectedId?'selected':''}>${s.name}</option>`).join('');
 }
 function populateCategorySelects() {
-  document.getElementById('tx-category').innerHTML = categoryOptions();
-  document.getElementById('filterCategory').innerHTML = '<option value="">All categories</option>' + categoryOptions();
+  document.getElementById('tx-category').innerHTML = categoryOptions('expense');
+  document.getElementById('tx-savings-category').innerHTML = categoryOptions('savings');
+  document.getElementById('tx-source').innerHTML = sourceOptions();
+  document.getElementById('filterCategory').innerHTML = '<option value="">All categories</option>' + categoryOptions('expense') + categoryOptions('savings');
 }
-document.getElementById('tx-type').addEventListener('change', (e) => {
-  document.getElementById('tx-cat-field').style.display = (e.target.value === 'expense' || e.target.value === 'refund') ? 'flex' : 'none';
-});
+function updateTxFieldVisibility() {
+  const type = document.getElementById('tx-type').value;
+  document.getElementById('tx-cat-field').style.display = (type === 'expense' || type === 'refund') ? 'flex' : 'none';
+  document.getElementById('tx-savings-field').style.display = (type === 'savings') ? 'flex' : 'none';
+  document.getElementById('tx-source-field').style.display = (type === 'income') ? 'flex' : 'none';
+}
+document.getElementById('tx-type').addEventListener('change', updateTxFieldVisibility);
 
 document.getElementById('addTx').addEventListener('click', () => {
   const date = document.getElementById('tx-date').value || todayStr();
   const desc = document.getElementById('tx-desc').value.trim();
   const type = document.getElementById('tx-type').value;
-  const category = (type === 'expense' || type === 'refund') ? document.getElementById('tx-category').value : null;
+  let category = null, source = null;
+  if (type === 'expense' || type === 'refund') category = document.getElementById('tx-category').value || null;
+  if (type === 'savings') category = document.getElementById('tx-savings-category').value || null;
+  if (type === 'income') source = document.getElementById('tx-source').value || null;
   const amount = parseFloat(document.getElementById('tx-amount').value);
   if (!desc || !amount || amount <= 0) { alert('Please enter a description and a positive amount.'); return; }
-  state.transactions.push({ id: uid(), date, description: desc, type, category, amount });
+  state.transactions.push({ id: uid(), date, description: desc, type, category, source, amount });
   save();
   document.getElementById('tx-desc').value = '';
   document.getElementById('tx-amount').value = '';
@@ -509,12 +682,14 @@ function renderTxTable(txs) {
   return `<table class="tx-table"><thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Category</th><th style="text-align:right;">Amount</th><th></th></tr></thead><tbody>
     ${txs.map(t => {
       const cat = state.categories.find(c => c.id === t.category);
+      const src = state.incomeSources.find(s => s.id === t.source);
+      const label = t.type === 'income' ? (src ? src.name : '—') : (cat ? cat.name : '—');
       const sign = (t.type==='income'||t.type==='refund') ? '+' : (t.type==='transfer'?'':'-');
       return `<tr>
         <td>${t.date}</td>
         <td>${t.description}</td>
         <td><span class="type-pill ${t.type}">${t.type}</span></td>
-        <td>${cat ? cat.name : '—'}</td>
+        <td>${label}</td>
         <td class="tx-amount ${t.type==='income'?'income':'expense'}">${sign}${fmt(t.amount)}</td>
         <td class="tx-actions"><span data-del="${t.id}">Delete</span></td>
       </tr>`;
@@ -524,6 +699,7 @@ function renderTxTable(txs) {
 
 function renderLedger() {
   populateCategorySelects();
+  updateTxFieldVisibility();
   if (!document.getElementById('tx-date').value) document.getElementById('tx-date').value = todayStr();
   applyLedgerFilters();
 }
@@ -548,19 +724,19 @@ function applyLedgerFilters() {
   document.getElementById(id).addEventListener('input', applyLedgerFilters);
 });
 
-// ---------- CATEGORIES ----------
+// ---------- CATEGORIES / SOURCES ----------
 document.getElementById('addCategory').addEventListener('click', () => {
   const name = document.getElementById('newCatName').value.trim();
   const budget = parseFloat(document.getElementById('newCatBudget').value) || 0;
   if (!name) return;
-  state.categories.push({ id: uid(), name, budget, archived: false });
+  state.categories.push({ id: uid(), name, budget, archived: false, kind: 'expense' });
   save();
   document.getElementById('newCatName').value = '';
   document.getElementById('newCatBudget').value = '';
   renderCategoryList();
 });
 function renderCategoryList() {
-  document.getElementById('categoryList').innerHTML = activeCategories().map(c => `
+  document.getElementById('categoryList').innerHTML = activeCategories('expense').map(c => `
     <div class="cat-list-item">
       <span>${c.name}</span>
       <div style="display:flex;align-items:center;gap:10px;">
@@ -585,18 +761,90 @@ function renderCategoryList() {
   });
 }
 
+document.getElementById('addSavCategory').addEventListener('click', () => {
+  const name = document.getElementById('newSavName').value.trim();
+  const budget = parseFloat(document.getElementById('newSavTarget').value) || 0;
+  if (!name) return;
+  state.categories.push({ id: uid(), name, budget, archived: false, kind: 'savings' });
+  save();
+  document.getElementById('newSavName').value = '';
+  document.getElementById('newSavTarget').value = '';
+  renderSavingsCategoryList();
+});
+function renderSavingsCategoryList() {
+  document.getElementById('savingsCategoryList').innerHTML = activeCategories('savings').map(c => `
+    <div class="cat-list-item">
+      <span>${c.name}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-sav-budget="${c.id}" value="${c.budget||''}" placeholder="0">
+        <span class="remove-link" data-sav-archive="${c.id}">Archive</span>
+      </div>
+    </div>
+  `).join('');
+  document.querySelectorAll('[data-sav-budget]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const cat = state.categories.find(c => c.id === inp.dataset.savBudget);
+      cat.budget = parseFloat(inp.value) || 0;
+      save();
+    });
+  });
+  document.querySelectorAll('[data-sav-archive]').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = state.categories.find(c => c.id === el.dataset.savArchive);
+      cat.archived = true;
+      save(); renderSavingsCategoryList();
+    });
+  });
+}
+
+document.getElementById('addSource').addEventListener('click', () => {
+  const name = document.getElementById('newSourceName').value.trim();
+  const planned = parseFloat(document.getElementById('newSourceAmount').value) || 0;
+  if (!name) return;
+  state.incomeSources.push({ id: uid(), name, planned, archived: false });
+  save();
+  document.getElementById('newSourceName').value = '';
+  document.getElementById('newSourceAmount').value = '';
+  renderSourceList();
+});
+function renderSourceList() {
+  document.getElementById('sourceList').innerHTML = activeSources().map(s => `
+    <div class="cat-list-item">
+      <span>${s.name}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="number" style="width:90px;padding:6px;border:1px solid var(--line);border-radius:6px;" data-source-planned="${s.id}" value="${s.planned||''}" placeholder="0">
+        <span class="remove-link" data-source-archive="${s.id}">Archive</span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">No income sources yet.</div>';
+  document.querySelectorAll('[data-source-planned]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const src = state.incomeSources.find(s => s.id === inp.dataset.sourcePlanned);
+      src.planned = parseFloat(inp.value) || 0;
+      save();
+    });
+  });
+  document.querySelectorAll('[data-source-archive]').forEach(el => {
+    el.addEventListener('click', () => {
+      const src = state.incomeSources.find(s => s.id === el.dataset.sourceArchive);
+      src.archived = true;
+      save(); renderSourceList();
+    });
+  });
+}
+
 // ---------- SETTINGS ----------
 function renderSettings() {
-  document.getElementById('settingsIncome').value = state.plannedIncome;
   document.getElementById('settingsOpening').value = state.openingBalance;
 }
-document.getElementById('settingsIncome').addEventListener('change', (e) => { state.plannedIncome = parseFloat(e.target.value)||0; save(); });
 document.getElementById('settingsOpening').addEventListener('change', (e) => { state.openingBalance = parseFloat(e.target.value)||0; save(); });
 document.getElementById('exportCsv').addEventListener('click', () => {
   let csv = 'Date,Description,Type,Category,Amount\n';
   state.transactions.forEach(t => {
     const cat = state.categories.find(c => c.id === t.category);
-    csv += `${t.date},"${t.description}",${t.type},"${cat?cat.name:''}",${t.amount}\n`;
+    const src = state.incomeSources.find(s => s.id === t.source);
+    const label = t.type === 'income' ? (src ? src.name : '') : (cat ? cat.name : '');
+    csv += `${t.date},"${t.description}",${t.type},"${label}",${t.amount}\n`;
   });
   const blob = new Blob([csv], {type:'text/csv'});
   const a = document.createElement('a');
@@ -605,9 +853,11 @@ document.getElementById('exportCsv').addEventListener('click', () => {
   a.click();
 });
 document.getElementById('resetAll').addEventListener('click', () => {
-  if (confirm('This will permanently delete all your categories and transactions. Type-confirm by clicking OK.')) {
+  if (confirm('This will permanently delete all your categories, income sources, and transactions. Type-confirm by clicking OK.')) {
     if (confirm('Are you absolutely sure? This cannot be undone.')) {
+      localStorage.removeItem('plugged_hub_budget_ledger_v1');
       state = defaultState();
+      state.incomeSources = [];
       save();
       location.reload();
     }
@@ -627,7 +877,9 @@ function showApp() {
 if (state.onboarded) {
   showApp();
 } else {
+  renderOnboardIncomeSources();
   renderOnboardCategories();
+  renderOnboardSavingsCategories();
   document.getElementById('view-onboard').classList.add('active');
 }
 </script>
