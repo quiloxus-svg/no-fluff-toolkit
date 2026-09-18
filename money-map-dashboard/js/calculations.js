@@ -87,6 +87,41 @@ export function unassignedMoney(incomeEvent, paycheckPlans) {
   return base - totalAllocated(paycheckPlans, incomeEvent.id);
 }
 
+// ---------- Bill Command Center ----------
+export function addPeriod(dateStr, frequency) {
+  const d = new Date(dateStr + 'T00:00:00');
+  switch (frequency) {
+    case 'weekly': d.setDate(d.getDate() + 7); break;
+    case 'biweekly': d.setDate(d.getDate() + 14); break;
+    case 'monthly': d.setMonth(d.getMonth() + 1); break;
+    case 'quarterly': d.setMonth(d.getMonth() + 3); break;
+    case 'annual': d.setFullYear(d.getFullYear() + 1); break;
+    default: d.setMonth(d.getMonth() + 1);
+  }
+  return d.toISOString().slice(0, 10);
+}
+export function nextDueDate(bill) {
+  let candidate = bill.anchorDate;
+  let guard = 0;
+  while (bill.lastPaidDate && candidate <= bill.lastPaidDate && guard < 60) {
+    candidate = addPeriod(candidate, bill.frequency);
+    guard++;
+  }
+  return candidate;
+}
+export function daysUntil(dateStr, today) {
+  const d1 = new Date(today + 'T00:00:00');
+  const d2 = new Date(dateStr + 'T00:00:00');
+  return Math.round((d2 - d1) / 86400000);
+}
+export function billStatus(due, today) {
+  const days = daysUntil(due, today);
+  if (days < 0) return { label: 'Overdue', level: 'red', days };
+  if (days <= 7) return { label: 'Due soon', level: 'amber', days };
+  if (days <= 30) return { label: 'Upcoming', level: 'gray', days };
+  return { label: 'Scheduled', level: 'gray', days };
+}
+
 // ---------- Balances ----------
 export function runningBalance(transactions, openingBalance) {
   let bal = openingBalance;
