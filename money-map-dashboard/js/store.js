@@ -54,6 +54,7 @@ function migrateV2ToV3(v2) {
     paycheckPlans: [],
     categories: expenseCategories,
     goalsBuffers,
+    bills: v2.bills || [],
     transactions,
   };
 }
@@ -90,13 +91,14 @@ function defaultStateV3() {
       id: uid(), name: g.name, purposeType: g.purposeType, targetAmount: 0, startingAmount: 0,
       targetDate: null, contributionFrequency: null, contributionAmount: null, priority: 'normal', notes: '', archived: false,
     })),
+    bills: [],
     transactions: [],
   };
 }
 
 export function loadState() {
   const v3 = JSON.parse(localStorage.getItem(KEY_V3) || 'null');
-  if (v3) return v3;
+  if (v3) { if (!v3.bills) v3.bills = []; return v3; }
 
   const v2 = JSON.parse(localStorage.getItem(KEY_V2) || 'null');
   if (v2) {
