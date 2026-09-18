@@ -56,7 +56,7 @@
         <button data-tab="transactions">Transactions</button>
         <button data-tab="paychecks">Paychecks</button>
         <button data-tab="savings">Savings</button>
-        <button class="disabled" title="Coming soon">Bills</button>
+        <button data-tab="bills">Bills</button>
         <button class="disabled" title="Coming soon">Timeline</button>
         <button data-tab="categories">Categories</button>
         <button data-tab="settings">Settings</button>
@@ -76,6 +76,7 @@
       <div class="next-action" id="nextAction"></div>
       <div class="quick-actions">
         <button data-jump="transactions">+ Add Transaction</button>
+        <button data-jump="bills">+ Add Bill</button>
         <button data-jump="paychecks">+ Plan Paycheck</button>
         <button data-jump="savings">+ Add Goal or Buffer</button>
       </div>
@@ -83,6 +84,7 @@
         <div class="section-title">Needs Attention</div>
         <div class="attention-list" id="attentionList"></div>
       </div>
+      <div class="section"><div class="section-title">Upcoming Bills (next 14 days)</div><div id="upcomingBillsList"></div></div>
       <div class="section"><div class="section-title">Income Sources</div><div id="incomeSourcesGrid"></div></div>
       <div class="section"><div class="section-title">Budget Health</div><div class="cat-grid" id="catGrid"></div></div>
       <div class="section"><div class="section-title">Goals &amp; Buffers</div><div class="cat-grid" id="savingsGrid"></div></div>
@@ -129,6 +131,30 @@
         <button class="btn btn-primary" id="addIncomeEvent">Plan this paycheck</button>
       </div>
       <div id="paychecksList"></div>
+    </div>
+
+    <!-- BILLS -->
+    <div class="tab-panel" id="tab-bills" style="display:none;">
+      <div class="section-title">Bill Command Center</div>
+      <p style="color:var(--muted);font-size:13.5px;margin-top:-6px;">Know what's due, when it's due, and what needs attention.</p>
+      <div class="form-row">
+        <div class="field"><label>Bill name</label><input type="text" id="bill-name" placeholder="e.g. Rent"></div>
+        <div class="field"><label>Category</label><select id="bill-category"></select></div>
+        <div class="field"><label>Amount</label><input type="number" id="bill-amount" placeholder="1400"></div>
+        <div class="field"><label>Frequency</label>
+          <select id="bill-frequency">
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+            <option value="biweekly">Biweekly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="annual">Annual</option>
+          </select>
+        </div>
+        <div class="field"><label>Next due date</label><input type="date" id="bill-date"></div>
+        <div class="field"><label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="bill-autopay" style="width:auto;"> Autopay</label></div>
+        <button class="btn btn-primary" id="addBill">Add bill</button>
+      </div>
+      <div id="billsList"></div>
     </div>
 
     <!-- SAVINGS (Goals & Buffers) -->
